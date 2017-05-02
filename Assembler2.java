@@ -20,11 +20,11 @@ public class Assembler2
 			while(in.hasNextLine())
 			{
 				String str = in.nextLine();
-				if(str.trim().length()>0)
-				{
+				/*if(str.trim().length()>0)
+				{*/
 					inText.add(str);
-				}
-				
+				//}
+
 			}
 			in.close();
 		}
@@ -35,19 +35,36 @@ public class Assembler2
 			return;
 		}
 		boolean separator = false;
-		for(int i=0;i<inText.size(); i++)
+		/*for(int i=inText.size();iinText.size(); i++)
 		{
 			String line = inText.get(i);
 			int lineNum = i;
-			if(i!=inText.size()-1)
-			{
-				if((line.trim().length() == 0)&&(inText.get(i+1).trim().length() > 0))
-				{
-
-					errors.add("Error: line " + lineNum + " is a blank line");
-				}
-			}
 			
+		}*/
+		int j = inText.size()-1;
+		while(j>=0)
+		{
+			String line = inText.get(j);
+			if(line.trim().length()>0)
+			{
+				break;
+			}
+			inText.remove(j);
+			j--;
+		}
+		int index = -1;
+		ArrayList<String> outText = new ArrayList<>();
+		for(int i=0;i<inText.size();i++)
+		{
+			String line = inText.get(i);
+			int lineNum = i;
+			
+			if(line.trim().toUpperCase().startsWith("--"))
+			{
+				index = i;
+				break;				
+			}			
+
 			if(line!=null&&(!(line.isEmpty())))
 			{
 				if(line.charAt(0)== ' ' || line.charAt(0)== '\t')
@@ -68,23 +85,11 @@ public class Assembler2
 					errors.add("Error: line " + lineNum + " has a duplicate data separator");
 				}	
 			}
-		}
-		int index = -1;
-		ArrayList<String> outText = new ArrayList<>();
-		for(int i=0;i<inText.size();i++)
-		{
-			String line = inText.get(i).trim();
 			
-
-			int lineNum = i;
-			if(line.trim().toUpperCase().startsWith("--"))
-			{
-				index = i;
-				break;				
-			}
-			else
-			{
-				code.add(line);			
+			
+			
+				code.add(line);		
+				System.out.println(line);
 				String[] parts = code.get(i).trim().split("\\s+");
 				/*for(int j=0;j<parts.length;j++)
 				{
@@ -93,7 +98,21 @@ public class Assembler2
 				//System.out.println();
 				//System.out.println(parts);
 				int opcode = -1;
-				if(!InstructionMap.sourceCodes.contains(parts[0].toUpperCase()))
+				
+				if(line.trim().length() == 0)
+				{
+					if(i==0)
+					{
+						errors.add("Error: line " + lineNum + " is a blank line");
+					}
+					else if((i>0)&&(inText.get(i-1).trim().length() > 0))
+					{
+						errors.add("Error: line " + lineNum + " is a blank line");
+					}					
+					
+				}
+				
+				else if(!InstructionMap.sourceCodes.contains(parts[0].toUpperCase()))
 				{
 					errors.add("Error: line " + lineNum + " illegal mnemonic");
 				}
@@ -164,7 +183,7 @@ public class Assembler2
 					outText.add(Integer.toHexString(opcode).toUpperCase() + " 0 0");
 				}
 			}						
-		}
+		
 		if(index!=-1)
 		{
 			for(int i=index+1;i<inText.size();i++)
@@ -185,43 +204,48 @@ public class Assembler2
 						errors.add("Error: line " + lineNum 
 								+ " does not have a numeric argument");
 					}
-					arg = 0; 
-					if(parts.length>=2)
+				}
+				int arg = 0; 
+				if(parts.length>=2)
+				{
+					try {
+						arg = Integer.parseInt(parts[0],16);
+					} catch (NumberFormatException e) {
+						errors.add("Error: line " + lineNum 
+								+ " does not have a numeric argument");
+					}
+					try {
+						arg = Integer.parseInt(parts[1],16);
+					} catch (NumberFormatException e) {
+						errors.add("Error: line " + lineNum 
+								+ " does not have a numeric argument");
+					}catch(ArrayIndexOutOfBoundsException e)
 					{
-						try {
-							arg = Integer.parseInt(parts[0],16);
-						} catch (NumberFormatException e) {
-							errors.add("Error: line " + lineNum 
-									+ " does not have a numeric argument");
-						}
-						try {
-							arg = Integer.parseInt(parts[1],16);
-						} catch (NumberFormatException e) {
-							errors.add("Error: line " + lineNum 
-									+ " does not have a numeric argument");
-						}catch(ArrayIndexOutOfBoundsException e)
-						{
-							errors.add("Error: line " + lineNum + " is out of bounds");
-						}catch(IllegalArgumentException e)
-						{
-							errors.add("Error: line " + lineNum + " Illegal Argument Exception");
-						}
+						errors.add("Error: line " + lineNum + " is out of bounds");
+					}catch(IllegalArgumentException e)
+					{
+						errors.add("Error: line " + lineNum + " Illegal Argument Exception");
 					}
 				}
-
-			}
-		}
-		outText.add("-1");
-		outText.addAll(data);
-		if(!(errors.size() > 0))
-		{
-			try (PrintWriter out = new PrintWriter(output)){
-				for(String s : outText) out.println(s);
-			} catch (FileNotFoundException e) {
-				errors.add("Cannot create output file");
 			}
 		}
 
+	
+
+	outText.add("-1");
+	outText.addAll(data);
+	if(!(errors.size() > 0))
+	{
+		try (PrintWriter out = new PrintWriter(output)){
+			for(String s : outText) out.println(s);
+		} catch (FileNotFoundException e) {
+			errors.add("Cannot create output file");
+		}
+	}
 	}
 
 }
+
+
+
+
