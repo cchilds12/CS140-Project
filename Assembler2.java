@@ -69,20 +69,20 @@ public class Assembler2
 			{
 				if(line.charAt(0)== ' ' || line.charAt(0)== '\t')
 				{
-					errors.add("Error: line " + lineNum + " starts with white space");				
+					errors.add("Error: line " + (lineNum + 1)+ " starts with white space");				
 				}
 				if(line.trim().toUpperCase().startsWith("--")&&!separator)				
 				{
 					separator = true;
 					if(line.trim().replace("-","").length()!=0)
 					{
-						errors.add("Error: line " + lineNum + " has a badly formatted data separator");					
+						errors.add("Error: line " + (lineNum + 1) + " has a badly formatted data separator");					
 					}
 
 				}
 				else if(line.trim().toUpperCase().startsWith("--")&&separator)
 				{
-					errors.add("Error: line " + lineNum + " has a duplicate data separator");
+					errors.add("Error: line " + (lineNum + 1) + " has a duplicate data separator");
 				}	
 			}
 			
@@ -103,38 +103,38 @@ public class Assembler2
 				{
 					if(i==0)
 					{
-						errors.add("Error: line " + lineNum + " is a blank line");
+						errors.add("Error: line " + (lineNum + 1)+ " is a blank line");
 					}
 					else if((i>0)&&(inText.get(i-1).trim().length() > 0))
 					{
-						errors.add("Error: line " + lineNum + " is a blank line");
+						errors.add("Error: line " + (lineNum + 1)+ " is a blank line");
 					}					
 					
 				}
 				
 				else if(!InstructionMap.sourceCodes.contains(parts[0].toUpperCase()))
 				{
-					errors.add("Error: line " + lineNum + " illegal mnemonic");
+					errors.add("Error: line " + (lineNum + 1)+ " illegal mnemonic");
 				}
 				else if(InstructionMap.sourceCodes.contains(parts[0].toUpperCase())&&(!(InstructionMap.sourceCodes.contains(parts[0]))))
 				{
-					errors.add("Error: line " + lineNum + " does not have the instruction mnemonic in upper case");
+					errors.add("Error: line " + (lineNum + 1) + " does not have the instruction mnemonic in upper case");
 					opcode = InstructionMap.opcode.get(parts[0]);
 				}
 				else if(InstructionMap.noArgument.contains(parts[0])&&parts.length!=1) //what?
 				{
-					errors.add("Error: line " + lineNum + " has an illegal argument");		
+					errors.add("Error: line " + (lineNum + 1)+" has an illegal argument");		
 					opcode = InstructionMap.opcode.get(parts[0]);
 				}
 				else if(!(InstructionMap.noArgument.contains(parts[0])))
 				{
 					if(parts.length==1)
 					{
-						errors.add( "Error: line " + lineNum + " is missing an argument");
+						errors.add( "Error: line " + (lineNum + 1) + " is missing an argument");
 					}
 					else if(parts.length>=3)
 					{
-						errors.add("Error: line " + lineNum + " has more than one argument");
+						errors.add("Error: line " + (lineNum + 1) + " has more than one argument");
 					}
 					opcode = InstructionMap.opcode.get(parts[0]);
 				}
@@ -149,11 +149,11 @@ public class Assembler2
 					{
 						if(!(InstructionMap.indirectOK.contains(parts[0])))
 						{
-							errors.add("Error: line " + lineNum + "is missing an argument"); //error message?							
+							errors.add("Error: line " + (lineNum + 1) + "is missing an argument"); //error message?							
 						}
 						else if(!parts[1].endsWith("]"))///problem?
 						{
-							errors.add("Error: line " + lineNum + " does not have the correct format"); //error message?
+							errors.add("Error: line " + (lineNum + 1) + " does not have the correct format"); //error message?
 						}
 						else
 						{
@@ -168,13 +168,17 @@ public class Assembler2
 					else if(parts[0].endsWith("A"))
 					{
 						indirLvl = 3;
+						
 					}
-					try {
-						int arg = Integer.parseInt(parts[1],16);
-					} catch (NumberFormatException e) {
-						errors.add("Error: line " + lineNum 
-								+ " does not have a numeric argument");
+					else{
+						try {
+							int arg = Integer.parseInt(parts[1],16);
+						} catch (NumberFormatException e) {
+							errors.add("Error: line " + (lineNum + 1)
+									+ " does not have a numeric argument");
+						}
 					}
+					
 					//System.out.println("here");
 					outText.add(Integer.toHexString(opcode).toUpperCase() + " " + indirLvl + " " + parts[1]);
 				}
@@ -201,7 +205,7 @@ public class Assembler2
 					try {
 						arg = Integer.parseInt(parts[0],16);
 					} catch (NumberFormatException e) {
-						errors.add("Error: line " + lineNum 
+						errors.add("Error: line " + (lineNum + 1)
 								+ " does not have a numeric argument");
 					}
 				}
@@ -211,20 +215,20 @@ public class Assembler2
 					try {
 						arg = Integer.parseInt(parts[0],16);
 					} catch (NumberFormatException e) {
-						errors.add("Error: line " + lineNum 
+						errors.add("Error: line " + (lineNum + 1)
 								+ " does not have a numeric argument");
 					}
 					try {
 						arg = Integer.parseInt(parts[1],16);
 					} catch (NumberFormatException e) {
-						errors.add("Error: line " + lineNum 
+						errors.add("Error: line " + (lineNum + 1) 
 								+ " does not have a numeric argument");
 					}catch(ArrayIndexOutOfBoundsException e)
 					{
-						errors.add("Error: line " + lineNum + " is out of bounds");
+						errors.add("Error: line " + (lineNum + 1)+ " is out of bounds");
 					}catch(IllegalArgumentException e)
 					{
-						errors.add("Error: line " + lineNum + " Illegal Argument Exception");
+						errors.add("Error: line " + (lineNum + 1)+ " Illegal Argument Exception");
 					}
 				}
 			}
@@ -245,7 +249,3 @@ public class Assembler2
 	}
 
 }
-
-
-
-
