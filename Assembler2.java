@@ -22,7 +22,7 @@ public class Assembler2
 				String str = in.nextLine();
 				/*if(str.trim().length()>0)
 				{*/
-					inText.add(str);
+				inText.add(str);
 				//}
 
 			}
@@ -39,7 +39,7 @@ public class Assembler2
 		{
 			String line = inText.get(i);
 			int lineNum = i;
-			
+
 		}*/
 		int j = inText.size()-1;
 		while(j>=0)
@@ -54,14 +54,24 @@ public class Assembler2
 		}
 		int index = -1;
 		ArrayList<String> outText = new ArrayList<>();
+		boolean d = false;
 		for(int i=0;i<inText.size();i++)
 		{
 			String line = inText.get(i);
 			int lineNum = i;
-			
+
 			if(line.trim().toUpperCase().startsWith("--"))
 			{
+				for(int k=0;k<line.length();k++)
+				{
+					if(line.charAt(k)!='-')
+					{
+						errors.add("Error: line " + (lineNum +1) + "dashed line has non-dashes");
+						break;
+					}
+				}
 				index = i;
+				//d = true;
 				break;				
 			}			
 
@@ -85,109 +95,112 @@ public class Assembler2
 					errors.add("Error: line " + (lineNum + 1) + " has a duplicate data separator");
 				}	
 			}
-			
-			
-			
-				code.add(line);		
-				System.out.println(line);
-				String[] parts = code.get(i).trim().split("\\s+");
-				/*for(int j=0;j<parts.length;j++)
+
+
+
+			code.add(line);		
+			System.out.println(line);
+			String[] parts = code.get(i).trim().split("\\s+");
+			/*for(int j=0;j<parts.length;j++)
 				{
 					System.out.print(parts[j] + " ");
 				}*/
-				//System.out.println();
-				//System.out.println(parts);
-				int opcode = -1;
-				
-				if(line.trim().length() == 0)
+			//System.out.println();
+			//System.out.println(parts);
+			int opcode = -1;
+
+			if(line.trim().length() == 0)
+			{
+				if(i==0)
 				{
-					if(i==0)
+					errors.add("Error: line " + (lineNum + 1)+ ". is a blank line");
+				}
+				else if((i>0)&&(inText.get(i-1).trim().length() > 0))
+				{
+					errors.add("Error: line " + (lineNum + 1)+ ". is a blank line");
+				}					
+
+			}
+
+			else if(!InstructionMap.sourceCodes.contains(parts[0].toUpperCase()))
+			{
+				errors.add("Error: line " + (lineNum + 1)+ " illegal mnemonic");
+			}
+			else if(InstructionMap.sourceCodes.contains(parts[0].toUpperCase())&&(!(InstructionMap.sourceCodes.contains(parts[0]))))
+			{
+				errors.add("Error: line " + (lineNum + 1) + " does not have the instruction mnemonic in upper case");
+				parts[0] = parts[0].toUpperCase();
+				//opcode = InstructionMap.opcode.get(parts[0]);
+			}
+			else if(InstructionMap.noArgument.contains(parts[0])&&parts.length!=1) //what?
+			{
+				errors.add("Error: line " + (lineNum + 1)+" this mnemonic cannot take arguments");		
+				opcode = InstructionMap.opcode.get(parts[0]);
+			}
+			else if(!(InstructionMap.noArgument.contains(parts[0])))
+			{
+				if(parts.length==1)
+				{
+					errors.add( "Error: line " + (lineNum + 1) + " is missing an argument");
+				}
+				else if(parts.length>=3)
+				{
+					errors.add("Error: line " + (lineNum + 1) + " has more than one argument");
+				}
+				opcode = InstructionMap.opcode.get(parts[0]);
+			}
+			else
+			{
+				opcode = InstructionMap.opcode.get(parts[0]);
+			}
+			if(parts.length==2)
+			{
+				int indirLvl = 1;
+				if(parts[1].startsWith("["))
+				{
+					if(!(InstructionMap.indirectOK.contains(parts[0])))
 					{
-						errors.add("Error: line " + (lineNum + 1)+ " is a blank line");
+						errors.add("Error: line " + (lineNum + 1) + "is missing an argument"); //error message?							
 					}
-					else if((i>0)&&(inText.get(i-1).trim().length() > 0))
+					else if(!parts[1].endsWith("]"))///problem?
 					{
-						errors.add("Error: line " + (lineNum + 1)+ " is a blank line");
-					}					
-					
-				}
-				
-				else if(!InstructionMap.sourceCodes.contains(parts[0].toUpperCase()))
-				{
-					errors.add("Error: line " + (lineNum + 1)+ " illegal mnemonic");
-				}
-				else if(InstructionMap.sourceCodes.contains(parts[0].toUpperCase())&&(!(InstructionMap.sourceCodes.contains(parts[0]))))
-				{
-					errors.add("Error: line " + (lineNum + 1) + " does not have the instruction mnemonic in upper case");
-					opcode = InstructionMap.opcode.get(parts[0]);
-				}
-				else if(InstructionMap.noArgument.contains(parts[0])&&parts.length!=1) //what?
-				{
-					errors.add("Error: line " + (lineNum + 1)+" has an illegal argument");		
-					opcode = InstructionMap.opcode.get(parts[0]);
-				}
-				else if(!(InstructionMap.noArgument.contains(parts[0])))
-				{
-					if(parts.length==1)
-					{
-						errors.add( "Error: line " + (lineNum + 1) + " is missing an argument");
+						errors.add("Error: line " + (lineNum + 1) + " is missing a closing \"]\""); //error message?
 					}
-					else if(parts.length>=3)
+					else
 					{
-						errors.add("Error: line " + (lineNum + 1) + " has more than one argument");
+						parts[1] = parts[1].substring(1, parts[1].length()-1);
+						indirLvl=2;
 					}
-					opcode = InstructionMap.opcode.get(parts[0]);
 				}
-				else
+				else 
 				{
-					opcode = InstructionMap.opcode.get(parts[0]);
-				}
-				if(parts.length==2)
-				{
-					int indirLvl = 1;
-					if(parts[1].startsWith("["))
-					{
-						if(!(InstructionMap.indirectOK.contains(parts[0])))
-						{
-							errors.add("Error: line " + (lineNum + 1) + "is missing an argument"); //error message?							
-						}
-						else if(!parts[1].endsWith("]"))///problem?
-						{
-							errors.add("Error: line " + (lineNum + 1) + " does not have the correct format"); //error message?
-						}
-						else
-						{
-							parts[1] = parts[1].substring(1, parts[1].length()-1);
-							indirLvl=2;
-						}
-					}
-					else if(parts[0].endsWith("I"))
+					if(parts[0].endsWith("I"))
 					{
 						indirLvl =0;
 					}
 					else if(parts[0].endsWith("A"))
 					{
-						indirLvl = 3;
-						
+						indirLvl = 3;						
 					}
-					else{
-						try {
-							int arg = Integer.parseInt(parts[1],16);
-						} catch (NumberFormatException e) {
-							errors.add("Error: line " + (lineNum + 1)
-									+ " does not have a numeric argument");
-						}
+
+					try {
+						int arg = Integer.parseInt(parts[1],16);
+					} catch (NumberFormatException e) {
+						errors.add("Error: line " + (lineNum + 1)
+								+ " argument is not a hex number");
 					}
-					
-					//System.out.println("here");
-					outText.add(Integer.toHexString(opcode).toUpperCase() + " " + indirLvl + " " + parts[1]);
 				}
-				else if(parts.length==1)
-				{
-					outText.add(Integer.toHexString(opcode).toUpperCase() + " 0 0");
-				}
-			}						
-		
+
+
+				//System.out.println("here");
+				outText.add(Integer.toHexString(opcode).toUpperCase() + " " + indirLvl + " " + parts[1]);
+			}
+			else if(parts.length==1)
+			{
+				outText.add(Integer.toHexString(opcode).toUpperCase() + " 0 0");
+			}
+		}						
+
 		if(index!=-1)
 		{
 			for(int i=index+1;i<inText.size();i++)
@@ -196,18 +209,36 @@ public class Assembler2
 				//System.out.println(s);
 				data.add(s);
 
+
 				//System.out.println(data.get(i).trim().split("\\s+"));
 				String[] parts = data.get(i-(index+1)).trim().split("\\s+");
 				int lineNum = i;
-				if(parts.length!=2)
+				if(s.trim().toUpperCase().startsWith("--"))
 				{
-					int arg = 0; 
-					try {
-						arg = Integer.parseInt(parts[0],16);
-					} catch (NumberFormatException e) {
-						errors.add("Error: line " + (lineNum + 1)
-								+ " does not have a numeric argument");
+					for(int k=0;k<s.length();k++)
+					{
+						if(s.charAt(k)!='-')
+						{
+							errors.add("Error: line " + (lineNum +1) + " dashed line has non-dashes");
+							break;
+						}
+					}			
+				}	
+				if(s.trim().length() == 0)
+				{
+					if(i==0)
+					{
+						errors.add("Error: line " + (lineNum + 1)+ ". is a blank line");
 					}
+					else if((i>0)&&(inText.get(i-1).trim().length() > 0))
+					{
+						errors.add("Error: line " + (lineNum + 1)+ ". is a blank line");
+					}					
+
+				}
+				else if(parts.length!=2)
+				{
+					errors.add("Error: line " + (lineNum + 1) + " data format does not consist of two numbers");
 				}
 				int arg = 0; 
 				if(parts.length>=2)
@@ -216,13 +247,13 @@ public class Assembler2
 						arg = Integer.parseInt(parts[0],16);
 					} catch (NumberFormatException e) {
 						errors.add("Error: line " + (lineNum + 1)
-								+ " does not have a numeric argument");
+								+ " data address is not a hex number");
 					}
 					try {
 						arg = Integer.parseInt(parts[1],16);
 					} catch (NumberFormatException e) {
 						errors.add("Error: line " + (lineNum + 1) 
-								+ " does not have a numeric argument");
+								+ " data value is not a hex number");
 					}catch(ArrayIndexOutOfBoundsException e)
 					{
 						errors.add("Error: line " + (lineNum + 1)+ " is out of bounds");
@@ -234,18 +265,17 @@ public class Assembler2
 			}
 		}
 
-	
 
-	outText.add("-1");
-	outText.addAll(data);
-	if(!(errors.size() > 0))
-	{
-		try (PrintWriter out = new PrintWriter(output)){
-			for(String s : outText) out.println(s);
-		} catch (FileNotFoundException e) {
-			errors.add("Cannot create output file");
+
+		outText.add("-1");
+		outText.addAll(data);
+		if(!(errors.size() > 0))
+		{
+			try (PrintWriter out = new PrintWriter(output)){
+				for(String s : outText) out.println(s);
+			} catch (FileNotFoundException e) {
+				errors.add("Cannot create output file");
+			}
 		}
 	}
-	}
-
 }
