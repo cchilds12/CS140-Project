@@ -10,7 +10,11 @@ public class Assembler2
 {
 	public static void assemble(File input, File output, ArrayList<String> errors)
 	{
-		System.out.println(input.exists());
+		/*if(errors == null)
+		{
+			throw new IllegalArgument Exception
+		}*/
+		//System.out.println(input.exists());
 		ArrayList<String> inText = new ArrayList<>();
 		ArrayList<String> code = new ArrayList<>();
 		ArrayList<String> data = new ArrayList<>();
@@ -31,7 +35,7 @@ public class Assembler2
 		catch(FileNotFoundException e)
 		{
 			errors.add("FileNotFoundException");
-			System.out.println("File Not Found");
+			//System.out.println("File Not Found");
 			return;
 		}
 		boolean separator = false;
@@ -99,7 +103,7 @@ public class Assembler2
 
 
 			code.add(line);		
-			System.out.println(line);
+			//System.out.println(line);
 			String[] parts = code.get(i).trim().split("\\s+");
 			/*for(int j=0;j<parts.length;j++)
 				{
@@ -113,11 +117,11 @@ public class Assembler2
 			{
 				if(i==0)
 				{
-					errors.add("Error: line " + (lineNum + 1)+ ". is a blank line");
+					errors.add("Error: line " + (lineNum + 1)+ " is a blank line");
 				}
 				else if((i>0)&&(inText.get(i-1).trim().length() > 0))
 				{
-					errors.add("Error: line " + (lineNum + 1)+ ". is a blank line");
+					errors.add("Error: line " + (lineNum + 1)+ " is a blank line");
 				}					
 
 			}
@@ -228,11 +232,11 @@ public class Assembler2
 				{
 					if(i==0)
 					{
-						errors.add("Error: line " + (lineNum + 1)+ ". is a blank line");
+						errors.add("Error: line " + (lineNum + 1)+ " is a blank line");
 					}
 					else if((i>0)&&(inText.get(i-1).trim().length() > 0))
 					{
-						errors.add("Error: line " + (lineNum + 1)+ ". is a blank line");
+						errors.add("Error: line " + (lineNum + 1)+ " is a blank line");
 					}					
 
 				}
